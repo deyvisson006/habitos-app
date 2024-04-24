@@ -1,7 +1,7 @@
 
 import flet as ft
  
- 
+
 def main(page: ft.Page):
     page.bgcolor = ft.colors.BLACK
     page.title = "Habitos App"
@@ -12,6 +12,46 @@ def main(page: ft.Page):
         {'title': 'Praticar violão', 'done': False},
         {'title': 'Jogar Mário', 'done': False}
     ]
+
+    def edit_habit(e, habit_title):        
+        #Encontra o habito que está sendo editado
+        habit = next ((hl for hl in habits_list if hl['title'] == habit_title), None)
+        if habit is not None:
+            # Substituir o checkbox por um Textfiel
+            index = habits_list.index(habit)
+            habits.content.controls[index] = ft.Row(
+                controls=[
+                    ft.TextField(
+                        value=habit['title'],
+                        on_submit=lambda e, hl=habit: update_habit_title(e, hl),
+                        autofocus=True,
+                    )
+                ]
+            )
+            habits.update()
+
+    def update_habit_title(e, habit):
+        habit['title'] = e.control.value
+        refresh_habits_ui()
+
+    def refresh_habits_ui():
+        habits.content.controls = [
+            ft.Row(
+                controls=[
+                    ft.Checkbox(
+                        label=hl['title'],
+                        value=hl['done'],
+                        on_change=change
+                    ),
+                    ft.IconButton(
+                        icon=ft.icons.EDIT,
+                        icon_color=ft.colors.BLACK,
+                        on_click=lambda e, hl=hl: edit_habit(e, hl['title'])
+                    )
+                ]
+            ) for hl in habits_list
+        ]
+        habits.update()
 
     def change(e = None):
         if e:
@@ -26,17 +66,26 @@ def main(page: ft.Page):
         progress_bar.update()
         progress_text.update()
 
-
     def add_habit(e):
         habits_list.append({'title': e.control.value, 'done':False})
         habits.content.controls = [
-            ft.Checkbox(
-                label=hl['title'],
-                value=hl['done'],
-                on_change=change
-            ) for hl in habits_list
+            ft.Row(
+                controls = [
+                    ft.Checkbox(
+                        label=hl['title'],
+                        value=hl['done'],
+                        on_change=change
+                     ),
+                    ft.IconButton(
+                        icon=ft.icons.EDIT,
+                        icon_color=ft.colors.BLACK
+                 )
+            ]
+            )for hl in habits_list
+            
         ]
         habits.update()
+
         e.control.value = ''
         e.control.update()
         change()
@@ -81,11 +130,22 @@ def main(page: ft.Page):
                     scroll = ft.ScrollMode.AUTO,
                     spacing = 20,
                     controls =[
-                        ft.Checkbox(
-                            label=hl ['title'],
-                            value=hl ['done'],
-                            on_change=change
-                        ) for hl in habits_list
+                        ft.Row(
+                            controls=[
+                                ft.Checkbox(
+                                label=hl ['title'],
+                                value=hl ['done'],
+                                on_change=change
+                                ),
+                                ft.IconButton(
+                                    icon=ft.icons.EDIT,
+                                    icon_color=ft.colors.BLACK,
+                                    on_click = lambda e, hl=hl: edit_habit (e, hl['title'])
+                                )
+
+                            ]
+                        )
+                        for hl in habits_list
                     ]
                    
                 ),
